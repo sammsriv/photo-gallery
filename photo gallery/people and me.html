@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nature Gallery</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>People and Me Gallery</h1>
+  </header>
+
+  <div class="upload-section">
+    <h2>Add Your Nature Picture</h2>
+    <label for="imageUpload" class="custom-file-label">Choose File</label>
+    <input type="file" id="imageUpload" accept="image/*">
+    <button id="uploadBtn">Upload</button>
+  </div>
+
+  <div class="gallery" id="gallery">
+    <!-- This section will display the uploaded images dynamically -->
+  </div>
+
+  <script>
+    const gallery = document.getElementById('gallery');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const imageUpload = document.getElementById('imageUpload');
+
+    // Load images from localStorage
+    window.onload = function() {
+      const images = JSON.parse(localStorage.getItem('uploadedImages')) || [];
+      images.forEach((imageData, index) => {
+        displayImage(imageData.src, imageData.name, index);
+      });
+    };
+
+    // Display uploaded image in gallery
+    function displayImage(src, fileName, index) {
+      const newImageItem = document.createElement('div');
+      newImageItem.classList.add('image-item');
+
+      const newImage = document.createElement('img');
+      newImage.src = src;
+      newImage.alt = fileName;
+
+      const downloadBtn = document.createElement('a');
+      downloadBtn.textContent = 'Download';
+      downloadBtn.classList.add('download-btn');
+      downloadBtn.setAttribute('href', src);
+      downloadBtn.setAttribute('download', fileName);
+
+      // Add remove button
+      const removeBtn = document.createElement('button');
+      removeBtn.textContent = 'Remove';
+      removeBtn.classList.add('remove-btn');
+      removeBtn.addEventListener('click', () => {
+        removeImage(index);
+        newImageItem.remove();
+      });
+
+      newImageItem.appendChild(newImage);
+      newImageItem.appendChild(downloadBtn);
+      newImageItem.appendChild(removeBtn);
+
+      gallery.appendChild(newImageItem);
+    }
+
+    // Add functionality to upload images
+    uploadBtn.addEventListener('click', () => {
+      const file = imageUpload.files[0];
+
+      if (!file) {
+        alert('Please select an image to upload.');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const imageSrc = e.target.result;
+        const imageName = file.name;
+
+        // Save the image to localStorage
+        const images = JSON.parse(localStorage.getItem('uploadedImages')) || [];
+        images.push({ src: imageSrc, name: imageName });
+        localStorage.setItem('uploadedImages', JSON.stringify(images));
+
+        // Display the uploaded image in the gallery
+        displayImage(imageSrc, imageName, images.length - 1);
+      };
+
+      reader.readAsDataURL(file);
+    });
+
+    // Remove image from localStorage and gallery
+    function removeImage(index) {
+      const images = JSON.parse(localStorage.getItem('uploadedImages')) || [];
+      images.splice(index, 1); // Remove the image from the array
+      localStorage.setItem('uploadedImages', JSON.stringify(images)); // Save updated array to localStorage
+    }
+  </script>
+</body>
+</html>
